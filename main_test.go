@@ -4,243 +4,188 @@ import (
 	"testing"
 )
 
-func TestTransform(t *testing.T) {
+func TestMapDose(t *testing.T) {
 	testCases := []struct {
-		name     string
-		input    string
-		expected string
+		input            string
+		expectedDose     string
+		expectedDoseUnit string
 	}{
 		{
-			input:    "TAKE 2 TABLETS (10 MG TOTAL) BY MOUTH 2 (TWO) TIMES A DAY WITH MEALS",
-			expected: "PRENDRE 2 COMPRIMÉS (10 MG) PAR LA BOUCHE 2 FOIS PAR JOUR AVEC LES REPAS",
+			input:            "PRENDRE 1 COMPRIME",
+			expectedDose:     "1",
+			expectedDoseUnit: "comprimé",
 		},
 		{
-			input:    "TAKE 1 TABLET (250 MG TOTAL) BY MOUTH 3 (THREE) TIMES A DAY MAX DAILY AMOUNT: 750 MG",
-			expected: "PRENDRE 1 COMPRIMÉ (250 MG) PAR LA BOUCHE 3 FOIS PAR JOUR (DOSE MAX PAR JOUR: 750 MG)",
-		}, {
-			input:    "TAKE 5-10 MLS BY MOUTH EVERY 4 (FOUR) TO 6 (SIX) HOURS AS NEEDED (COUGH) FOR UP TO 30 DAYS",
-			expected: "PRENDRE 5-10 ML PAR LA BOUCHE AUX 4 À 6 HEURES AU BESOIN (TOUX) JUSQU'À UN MAXIMUM DE 30 JOURS",
+			input:            "SELON LES DIRECTIVES DU MEDECIN",
+			expectedDose:     "",
+			expectedDoseUnit: "",
 		},
 		{
-			input:    "TAKE 3 ML (1.25 MG TOTAL) BY NEBULIZATION EVERY 4 (FOUR) HOURS AS NEEDED FOR WHEEZING (COUGH)",
-			expected: "PRENDRE 3 ML (1,25 MG) EN NÉBULISATION AUX 4 HEURES AU BESOIN SI RESPIRATION SIFFLANTE (TOUX)",
+			input:            "2 VAPORISATIONS",
+			expectedDose:     "2",
+			expectedDoseUnit: "vaporisation",
 		},
 		{
-			input:    "TAKE THREE TABLET(S) (30 MG TOTAL) BY MOUTH AT BEDTIME",
-			expected: "PRENDRE TROIS COMPRIMÉ(S) (30 MG) PAR LA BOUCHE AU COUCHER",
+			input:            "PRENDRE 2 INHALATIONS",
+			expectedDose:     "2",
+			expectedDoseUnit: "bouffée",
 		},
 		{
-			input:    "TAKE 0.6 MLS BY MOUTH 2 (TWO) TIMES DAILY FOR 30 DAYS",
-			expected: "PRENDRE 0,6 ML PAR LA BOUCHE 2 FOIS PAR JOUR POUR 30 JOURS",
+			input:            "PRENDRE 1 A 2 COMPRIMES",
+			expectedDose:     "1-2",
+			expectedDoseUnit: "comprimé",
 		},
 		{
-			input:    "INJECT 50 UNITS UNDER THE SKIN NIGHTLY",
-			expected: "INJECTER 50 UNITÉS SOUS LA PEAU 1 FOIS PAR JOUR AU COUCHER",
+			input:            "PRENDRE 1 - 2 COMPRIMES",
+			expectedDose:     "1-2",
+			expectedDoseUnit: "comprimé",
 		},
 		{
-			input:    "INHALE 2 PUFFS EVERY 4 HOURS AS NEEDED FOR WHEEZING",
-			expected: "INHALER 2 BOUFFÉES AUX 4 HEURES AU BESOIN SI RESPIRATION SIFFLANTE",
+			input:            "PRENDRE 1-2 COMPRIMES",
+			expectedDose:     "1-2",
+			expectedDoseUnit: "comprimé",
 		},
 		{
-			input:    "7.5 ML TWICE DAILY X 10 DAYS",
-			expected: "7,5 ML 2 FOIS PAR JOUR X 10 JOURS",
+			input:            "PRENDRE 17 GRAMMES",
+			expectedDose:     "17",
+			expectedDoseUnit: "g",
 		},
 		{
-			input:    "ONE TAB ORALLY EVERY DAY",
-			expected: "UN COMPRIMÉ PAR LA BOUCHE 1 FOIS PAR JOUR",
+			input:            "PRENDRE 0.5 COMPRIME",
+			expectedDose:     "0.5",
+			expectedDoseUnit: "comprimé",
 		},
 		{
-			input:    "TAKE 650 MG BY MOUTH EVERY 6 (SIX) HOURS AS NEEDED FOR MILD PAIN (1-3) OR FEVER",
-			expected: "PRENDRE 650 MG PAR LA BOUCHE AUX 6 HEURES AU BESOIN POUR DOULEUR LÉGÈRE OU FIÈVRE",
+			input:            "PRENDRE 0.5 A 1 COMPRIME",
+			expectedDose:     "0.5-1",
+			expectedDoseUnit: "comprimé",
 		},
 		{
-			input:    "PLACE 1 PATCH ONTO THE SKIN EVERY 7 DAYS",
-			expected: "APPLIQUER 1 TIMBRE SUR LA PEAU À TOUS LES 7 JOURS",
+			input:            "PRENDRE 0.5 COMPRIME",
+			expectedDose:     "0.5",
+			expectedDoseUnit: "comprimé",
 		},
 		{
-			input:    "TAKE 1 TABLET BY MOUTH EVERY 6 (SIX) HOURS AS NEEDED FOR FEVER",
-			expected: "PRENDRE 1 COMPRIMÉ PAR LA BOUCHE AUX 6 HEURES AU BESOIN POUR LA FIÈVRE",
+			input:            "PRENDRE 0.5 A 2 COMPRIME",
+			expectedDose:     "0.5-2",
+			expectedDoseUnit: "comprimé",
 		},
 		{
-			input:    "TAKE 1 CAPSULE (40 MG TOTAL) BY MOUTH EVERY 12 (TWELVE) HOURS FOR 30 DAYS",
-			expected: "PRENDRE 1 CAPSULE (40 MG) PAR LA BOUCHE AUX 12 HEURES POUR 30 JOURS",
+			input:            "PRENDRE 0,5 A 2 COMPRIME",
+			expectedDose:     "0.5-2",
+			expectedDoseUnit: "comprimé",
 		},
 		{
-			input:    "TAKE 2.5 MG BY NEBULIZATION 3 (THREE) TIMES DAILY",
-			expected: "PRENDRE 2,5 MG EN NÉBULISATION 3 FOIS PAR JOUR",
+			input:            "PRENDRE 0,5 COMPRIME",
+			expectedDose:     "0.5",
+			expectedDoseUnit: "comprimé",
 		},
 		{
-			input:    "TAKE 1 CAPSULE(300 MG) BY MOUTH THREE TIMES DAILY MAX DAILY AMOUNT: 900 MG",
-			expected: "PRENDRE 1 CAPSULE(300 MG) PAR LA BOUCHE 3 FOIS PAR JOUR (DOSE MAX PAR JOUR: 900 MG)",
-		},
-		{
-			input:    "TAKE 5 ML (125 MG TOTAL) BY MOUTH 2 (TWO) TIMES A DAY FOR 10 DAYS MAX DAILY AMOUNT: 250 MG",
-			expected: "PRENDRE 5 ML (125 MG) PAR LA BOUCHE 2 FOIS PAR JOUR POUR 10 JOURS (DOSE MAX PAR JOUR: 250 MG)",
-		},
-		{
-			input:    "APPLY TOPICALLY ONCE AS NEEDED",
-			expected: "APPLIQUER LOCALEMENT 1 FOIS AU BESOIN",
-		},
-		{
-			input:    "INSTILL 1 DROP INTO THE LEFT EYE DAILY",
-			expected: "INSTILLER 1 GOUTTE DANS L'OEIL GAUCHE 1 FOIS PAR JOUR",
-		},
-		{
-			input:    "TAKE 1 TABLET (500 MG TOTAL) BY MOUTH 2 (TWO) TIMES A DAY FOR 6 DOSES",
-			expected: "PRENDRE 1 COMPRIMÉ (500 MG) PAR LA BOUCHE 2 FOIS PAR JOUR POUR 6 DOSES",
-		},
-		{
-			input:    "TAKE 1 TABLET BY MOUTH TWICE A DAY AS NEEDED FOR PAIN",
-			expected: "PRENDRE 1 COMPRIMÉ PAR LA BOUCHE 2 FOIS PAR JOUR AU BESOIN POUR DOULEUR",
-		},
-		{
-			input:    "TAKE 25 MG BY MOUTH EVERY EVENING",
-			expected: "PRENDRE 25 MG PAR LA BOUCHE CHAQUE SOIR",
-		},
-		{
-			input:    "TAKE 4 MG BY MOUTH ONCE A DAY",
-			expected: "PRENDRE 4 MG PAR LA BOUCHE 1 FOIS PAR JOUR",
-		},
-		{
-			input:    "APPLY TO SKIN 2 TIMES DAILY AS NEEDED FOR ITCHING",
-			expected: "APPLIQUER SUR LA PEAU 2 FOIS PAR JOUR AU BESOIN POUR PRURIT",
-		},
-		{
-			input:    "PLACE ONE DROP(S) TO TWO DROP(S) IN AFFECTED EYE(S) EVERY 4 HOURS FOR 5 DAYS",
-			expected: "APPLIQUER UNE GOUTTE(S) À DEUX GOUTTE(S) DANS L'OEIL (OU LES YEUX) AFFECTÉ(S) AUX 4 HEURES POUR 5 JOURS",
-		},
-		{
-			input:    "INHALE ONE PUFF(S) BY MOUTH ONCE A DAY",
-			expected: "INHALER UNE BOUFFÉE(S) PAR LA BOUCHE 1 FOIS PAR JOUR",
-		},
-		{
-			input:    "TAKE 100 MG BY MOUTH THREE TIMES A DAY",
-			expected: "PRENDRE 100 MG PAR LA BOUCHE 3 FOIS PAR JOUR",
-		},
-		{
-			input:    "APPLY TO AFFECTED AREA 3 TIMES DAILY",
-			expected: "APPLIQUER SUR LA ZONE AFFECTÉE 3 FOIS PAR JOUR",
-		},
-		{
-			input:    "TAKE 40 MG BY MOUTH EVERY OTHER DAY",
-			expected: "PRENDRE 40 MG PAR LA BOUCHE AUX 2 JOURS",
-		},
-		{
-			input:    "TAKE 1 CAPSULE WEEKLY",
-			expected: "PRENDRE 1 CAPSULE 1 FOIS PAR SEMAINE",
-		},
-		{
-			input:    "TAKE ONE TABLET BY MOUTH ONE TIME A DAY",
-			expected: "PRENDRE UN COMPRIMÉ PAR LA BOUCHE 1 FOIS PAR JOUR",
-		},
-		{
-			input:    "APPLY 1 DROP TO EYE NIGHTLY",
-			expected: "APPLIQUER 1 GOUTTE DANS L'OEIL 1 FOIS PAR JOUR AU COUCHER",
-		},
-		{
-			input:    "INJECT 0.3 ML (0.15 MG TOTAL) INTRAMUSCULARLY ONCE FOR 1 DOSE",
-			expected: "INJECTER 0,3 ML (0,15 MG) PAR VOIE INTRAMUSCULAIRE POUR 1 DOSE",
-		},
-		{
-			input:    "TAKE 600 MG BY MOUTH 4 (FOUR) TIMES A DAY",
-			expected: "PRENDRE 600 MG PAR LA BOUCHE 4 FOIS PAR JOUR",
-		},
-		{
-			input:    "PRENDRE 1 COMPRIMÉ (1,000 MG TOTAL) PAR LA BOUCHE 1 FOIS PAR JOUR AU COUCHER",
-			expected: "PRENDRE 1 COMPRIMÉ (1000 MG) PAR LA BOUCHE 1 FOIS PAR JOUR AU COUCHER",
-		},
-		{
-			input:    "TAKE 10 ML (1 G TOTAL) BY MOUTH 4 (FOUR) TIMES A DAY (BEFORE MEALS AND NIGHTLY)",
-			expected: "PRENDRE 10 ML (1 G) PAR LA BOUCHE 4 FOIS PAR JOUR (AVANT LES REPAS ET AU COUCHER)",
-		},
-		{
-			input:    "PLACE 1 APPLICATOR VAGINALLY NIGHTLY",
-			expected: "INSÉRER 1 APPLICATEUR DANS LE VAGIN 1 FOIS PAR JOUR AU COUCHER",
-		},
-		{
-			input:    "PLACE RECTALLY 3 (THREE) TIMES DAILY",
-			expected: "INSÉRER DANS LE RECTUM 3 FOIS PAR JOUR",
-		},
-		{
-			input:    "TAKE 1 TABLET BY MOUTH NIGHTLY AS NEEDED MAX DAILY AMOUNT: 0.5 MG",
-			expected: "PRENDRE 1 COMPRIMÉ PAR LA BOUCHE 1 FOIS PAR JOUR AU COUCHER AU BESOIN (DOSE MAX PAR JOUR: 0,5 MG)",
-		},
-		{
-			input:    "TAKE 1 CAPSULE (300 MG TOTAL) BY MOUTH 4 (FOUR) TIMES A DAY MAX DAILY AMOUNT: 1,200 MG",
-			expected: "PRENDRE 1 CAPSULE (300 MG) PAR LA BOUCHE 4 FOIS PAR JOUR (DOSE MAX PAR JOUR: 1200 MG)",
-		},
-		{
-			input:    "TAKE 1 TABLET BY MOUTH EVERY NIGHT AT BEDTIME",
-			expected: "PRENDRE 1 COMPRIMÉ PAR LA BOUCHE CHAQUE SOIR AU COUCHER",
-		},
-		{
-			input:    "SPRAY TWO SPRAY(S) IN BOTH NOSTRILS ONCE A DAY",
-			expected: "VAPORISER DEUX VAPORISATION(S) DANS CHAQUE NARINE 1 FOIS PAR JOUR",
-		},
-		{
-			input:    "INJECT 1 ML (5,000 UNITS TOTAL) UNDER THE SKIN EVERY 8 (EIGHT) HOURS",
-			expected: "INJECTER 1 ML (5000 UNITÉS TOTAL) SOUS LA PEAU AUX 8 HEURES",
-		},
-		{
-			input:    "TAKE 50,000 UNITS BY MOUTH EVERY 14 (FOURTEEN) DAYS",
-			expected: "PRENDRE 50000 UNITÉS PAR LA BOUCHE AUX 14 JOURS",
-		},
-		{
-			input:    "APPLY BID TO THE RASH",
-			expected: "APPLIQUER 2 FOIS PAR JOUR SUR LES ROUGEURS",
-		},
-		{
-			input:    "TAKE 1 TABLET BY MOUTH 2 TIMES DAILY GIVE WITH MEALS AND WITH A FULL GLASS OF WATER",
-			expected: "PRENDRE 1 COMPRIMÉ PAR LA BOUCHE 2 FOIS PAR JOUR AVEC LES REPAS ET AVEC UN GRAND VERRE D'EAU",
-		},
-		{
-			input:    "TAKE 1 TABLET (1 MG TOTAL) BY MOUTH 2 (TWO) TIMES A DAY FOR 90 DAYS TAKE WITH FULL GLASS OF WATER",
-			expected: "PRENDRE 1 COMPRIMÉ (1 MG) PAR LA BOUCHE 2 FOIS PAR JOUR POUR 90 JOURS PRENDRE AVEC UN GRAND VERRE D'EAU",
-		},
-		{
-			input:    "INJECT 1 ML INTO THE MUSCLE EVERY 3 (THREE) MONTHS",
-			expected: "INJECTER 1 ML PAR VOIE INTRAMUSCULAIRE AUX 3 MOIS",
-		},
-		{
-			input:    "TAKE 150 MG BY MOUTH EVERY 30 (THIRTY) DAYS TAKE IN AM WITH GLASS OF WATER PRIOR TO FOOD DON'T LIE DOWN FOR 30 MINUTES",
-			expected: "PRENDRE 150 MG PAR LA BOUCHE AUX 30 JOURS PRENDRE LE MATIN AVEC UN VERRE D'EAU À JEUN ÉVITER DE S'ALLONGER POUR 30 MINUTES",
-		},
-		{
-			input:    "TAKE 5.5 ML (110 MG TOTAL) BY MOUTH EVERY 6 HOURS AS NEEDED FOR PAIN OR FEVER PLEASE OBTAIN MEDICINE (OVER THE COUNTER) FROM YOUR LOCAL PHARMACY",
-			expected: "PRENDRE 5,5 ML (110 MG) PAR LA BOUCHE AUX 6 HEURES AU BESOIN POUR DOULEUR OU FIÈVRE VEUILLER VOUS PROCURER CE MÉDICAMENT (EN VENTE LIBRE) DANS VOTRE PHARMACIE COMMUNAUTAIRE",
-		},
-		{
-			input:    "TAKE 100 MG BY MOUTH ONCE AS NEEDED FOR MIGRAINE MAY REPEAT IN 2 HOURS IF UNRESOLVED DO NOT EXCEED 200 MG IN 24 HOURS",
-			expected: "PRENDRE 100 MG PAR LA BOUCHE 1 FOIS AU BESOIN POUR MIGRAINE PEUT RÉPÉTER DANS 2 HEURES SI NON SOULAGÉ NE PAS DÉPASSER 200 MG PAR JOUR",
-		},
-		{
-			input:    "TAKE 1 TABLET (50 MG TOTAL) BY MOUTH ONCE AS NEEDED FOR MIGRAINE FOR UP TO 1 DOSE MAY REPEAT DOSE ONCE IN 2 HOURS IF NO RELIEF DO NOT EXCEED 2 DOSES IN 24 HOURS",
-			expected: "PRENDRE 1 COMPRIMÉ (50 MG) PAR LA BOUCHE 1 FOIS AU BESOIN POUR MIGRAINE JUSQU'À UN MAXIMUM DE 1 DOSE PEUT RÉPÉTER LA DOSE 1 FOIS DANS 2 HEURES SI NON SOULAGÉ NE PAS DÉPASSER 2 DOSES PAR JOUR",
-		},
-		{
-			input:    "INSERT 1 SUPPOSITORY (25 MG TOTAL) INTO THE RECTUM 2 (TWO) TIMES A DAY AS NEEDED FOR HEMORRHOIDS",
-			expected: "INSÉRER 1 SUPPOSITOIRE (25 MG) DANS LE RECTUM 2 FOIS PAR JOUR AU BESOIN POUR HÉMORROÏDES",
-		},
-		{
-			input:    "APPLY 1 APPLICATION TO AFFECTED EYE(S) 4 (FOUR) TIMES A DAY FOR 7 DAYS",
-			expected: "APPLIQUER 1 APPLICATION DANS L'OEIL (OU LES YEUX) AFFECTÉ(S) 4 FOIS PAR JOUR POUR 7 JOURS",
-		},
-		{
-			input:    "TAKE 2 TABLETS BY MOUTH EVERY 4 (FOUR) HOURS AS NEEDED FOR SEVERE PAIN (7-10) MAX DAILY AMOUNT: 12 TABLETS",
-			expected: "PRENDRE 2 COMPRIMÉS PAR LA BOUCHE AUX 4 HEURES AU BESOIN POUR DOULEUR SÉVÈRE (DOSE MAX PAR JOUR: 12 COMPRIMÉS)",
-		},
-		{
-			input:    "SPRAY ONE SPRAY(S) IN BOTH NOSTRILS ONCE A DAY DOSE IS FOR EACH NOSTRIL",
-			expected: "VAPORISER UN VAPORISATION(S) DANS CHAQUE NARINE 1 FOIS PAR JOUR LA DOSE EST POUR CHAQUE NARINE",
+			input:            "1 COMPRIME FOIS PAR JOUR 1/2 HEURE AVANT COUCHER",
+			expectedDose:     "1",
+			expectedDoseUnit: "comprimé",
 		},
 	}
 
 	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			actual := Transform(tc.input)
+		t.Run("TestMapDose", func(t *testing.T) {
+			actualDose, actualDoseUnit := MapDose(tc.input)
 
+			if actualDose != tc.expectedDose {
+				t.Errorf("Dose\nI: %v\nE: %v\nA: %v", tc.input, tc.expectedDose, actualDose)
+				return
+			}
+
+			if actualDoseUnit != tc.expectedDoseUnit {
+				t.Errorf("DoseUnit\nI: %v\nE: %v\nA: %v", tc.input, tc.expectedDoseUnit, actualDoseUnit)
+				return
+			}
+		})
+	}
+}
+
+func TestRemoveFraction(t *testing.T) {
+	testCases := []struct {
+		input    string
+		expected string
+	}{
+		{
+			input:    "PRENDRE 1/2 COMPRIME",
+			expected: "PRENDRE 0.5 COMPRIME",
+		},
+		{
+			input:    "PRENDRE 1/4 COMPRIME",
+			expected: "PRENDRE 0.25 COMPRIME",
+		},
+		{
+			input:    "PRENDRE 3/4 COMPRIME",
+			expected: "PRENDRE 0.75 COMPRIME",
+		},
+		{
+			input:    "PRENDRE 1 1/2 COMPRIME",
+			expected: "PRENDRE 1.5 COMPRIME",
+		},
+		{
+			input:    "PRENDRE ½ COMPRIME",
+			expected: "PRENDRE 0.5 COMPRIME",
+		},
+		{
+			input:    "PRENDRE ¼ COMPRIME",
+			expected: "PRENDRE 0.25 COMPRIME",
+		},
+		{
+			input:    "PRENDRE ¾ COMPRIME",
+			expected: "PRENDRE 0.75 COMPRIME",
+		},
+		{
+			input:    "PRENDRE 1 1/4 COMPRIME",
+			expected: "PRENDRE 1.25 COMPRIME",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run("TestRemoveFraction", func(t *testing.T) {
+			actual := RemoveFraction(tc.input)
 			if actual != tc.expected {
-				t.Errorf("\nI: %v\nE: %v\nA: %v", tc.input, tc.expected, actual)
+				t.Errorf("I: %v\nE: %v\nA: %v", tc.input, tc.expected, actual)
+				return
+			}
+		})
+	}
+}
+
+func TestMapFrequency(t *testing.T) {
+	testCases := []struct {
+		input    string
+		expected string
+	}{
+		{
+			input:    "PRENDRE 1 COMPRIME 1 FOIS PAR JOUR",
+			expected: "1 fois par jour",
+		},
+		{
+			input:    "PRENDRE 1 COMPRIME 2 FOIS PAR JOUR",
+			expected: "2 fois par jour",
+		},
+		{
+			input:    "PRENDRE 1 A 2 COMPRIMES AUX 4 A 6 HEURES SI BESOIN (MAXIMUM 8 COMPRIMES PAR JOUR)",
+			expected: "",
+		},
+		{
+			input:    "PRENDRE 1 COMPRIME PAR JOUR",
+			expected: "1 fois par jour",
+		},
+		{
+			input:    "PRENDRE 1 COMPRIME PAR JOUR MAXIMUM 10 COMPRIME PAR JOUR",
+			expected: "1 fois par jour",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run("TestMapFrequency", func(t *testing.T) {
+			_, actual := MapFrequency(tc.input)
+			if actual != tc.expected {
+				t.Errorf("I: %v\nE: %v\nA: %v", tc.input, tc.expected, actual)
 				return
 			}
 		})
