@@ -477,7 +477,7 @@ func MapFrequency(line string) (int, string) {
 	}
 
 	// PAR SEMAINE (mais pas MAXIMUM # COMPRIMES PAR SEMAINE)
-	re = regexp.MustCompile(`[0-9]+ (COMPRIMES?|CAPSULES?) PAR SEMAINE`)
+	re = regexp.MustCompile(`[0-9]+ (COMPRIMES?|CAPSULES?|TIMBRES?) PAR SEMAINE`)
 	matches = re.FindAllString(line, -1)
 
 	filteredMatches = nil
@@ -515,7 +515,7 @@ func MapFrequency(line string) (int, string) {
 		}
 	}
 
-	if regexp.MustCompile(`GARDER 24 HEURES,? RETIRER .* CHANGER`).MatchString(line) {
+	if regexp.MustCompile(`GARDER 24 HEURES,? ?RETIRER .* CHANGER`).MatchString(line) {
 		return 0, "1 fois par jour"
 	}
 
