@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"time"
 	"unicode"
 
 	"golang.org/x/text/runes"
@@ -17,16 +18,21 @@ import (
 )
 
 type Dosage struct {
-	Id          int    `json:"id"`
-	Text        string `json:"text"`
-	Dose        string `json:"dose"`
-	DoseUnit    string `json:"dose_unit"`
-	Route       string `json:"route"`
-	FrequencyId int    `json:"frequency_id"`
-	Frequency   string `json:"frequency"`
+	Id           int    `json:"id"`
+	Text         string `json:"text"`
+	Dose         string `json:"dose"`
+	DoseUnit     string `json:"dose_unit"`
+	Route        string `json:"route"`
+	FrequencyId  int    `json:"frequency_id"`
+	Frequency    string `json:"frequency"`
+	Instructions string `json:"instructions"`
+	PrnReason1   string `json:"prn_reason1"`
+	PrnReason2   string `json:"prn_reason2"`
+	Duration     string `json:"duration"`
 }
 
 func main() {
+	start := time.Now()
 	file, err := os.Open("in_sample.txt")
 	if err != nil {
 		fmt.Println(err)
@@ -58,6 +64,8 @@ func main() {
 
 	PrintToJson(dosages)
 	PrintToText(dosages)
+
+	fmt.Println(time.Since(start))
 }
 
 func PrintToJson(dosages []Dosage) {
@@ -109,6 +117,8 @@ func MapAll(line string) (Dosage, error) {
 	dosage.Route = MapRoute(line, dosage)
 
 	dosage.FrequencyId, dosage.Frequency = MapFrequency(line)
+
+	dosage.Instructions = MapInstructions(line)
 
 	return dosage, nil
 }
@@ -184,6 +194,10 @@ func MapDose(line string) (string, string) {
 		return re.FindStringSubmatch(line)[1], "timbre"
 	}
 
+	if strings.Contains(line, "AJOUTER LE CONTENU DU SACHET") {
+		return "1", "sachet"
+	}
+
 	return "", ""
 }
 
@@ -252,7 +266,7 @@ func MapRoute(line string, dosage Dosage) string {
 
 func MapFrequency(line string) (int, string) {
 	isPrn := false
-	withFood := false
+	withFood := isWithFood(line)
 
 	if isComplexDosage(line) {
 		return 0, ""
@@ -260,10 +274,6 @@ func MapFrequency(line string) (int, string) {
 
 	if strings.Contains(line, "PRN") || strings.Contains(line, "AU BESOIN") || strings.Contains(line, "SI BESOIN") || strings.Contains(line, "AS NEEDED") || regexp.MustCompile(`SI (DOULEURS?)`).MatchString(line) {
 		isPrn = true
-	}
-
-	if strings.Contains(line, "EN MANGEANT") || strings.Contains(line, "AVEC NOURRITURE") {
-		withFood = true
 	}
 
 	// # FOIS PAR JOUR (FR)
@@ -304,6 +314,9 @@ func MapFrequency(line string) (int, string) {
 				if regexp.MustCompile(`(AU|AVEC LE) DEJEUNER`).MatchString(line) {
 					return 0, "1 fois par jour au déjeuner"
 				} else if regexp.MustCompile(`AVANT LE DEJEUNER`).MatchString(line) {
+					if isIpp(line) {
+						return 0, "1 fois par jour"
+					}
 					return 0, "1 fois par jour avant le déjeuner"
 				} else if strings.Contains(line, "LE MATIN") {
 					return 0, "1 fois par jour le matin"
@@ -522,6 +535,19 @@ func MapFrequency(line string) (int, string) {
 	return 0, ""
 }
 
+func MapInstructions(line string) string {
+	instructions := []string{}
+	if isWithFood(line) {
+		instructions = append(instructions, "Prendre avec nourriture.")
+	}
+
+	if strings.Contains(line, "AU MOINS 30 MINUTES AVANT NOURRITURE OU AUTRE MEDICAMENT") {
+		instructions = append(instructions, "Prendre au moins 30 minutes avant nourriture ou autre médicament.")
+	}
+
+	return strings.Join(instructions, " ")
+}
+
 func RemoveAccents(text string) (string, error) {
 	t := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
 	result, _, err := transform.String(t, text)
@@ -560,5 +586,19 @@ func isComplexDosage(line string) bool {
 		return true
 	}
 
+	return false
+}
+
+func isWithFood(line string) bool {
+	if strings.Contains(line, "EN MANGEANT") || strings.Contains(line, "AVEC NOURRITURE") {
+		return true
+	}
+	return false
+}
+
+func isIpp(line string) bool {
+	if strings.Contains(line, "PP12") || strings.Contains(line, "PP205") || strings.Contains(line, "REFLUX") {
+		return true
+	}
 	return false
 }

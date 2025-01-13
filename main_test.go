@@ -125,6 +125,11 @@ func TestMapDose(t *testing.T) {
 			expectedDose:     "",
 			expectedDoseUnit: "",
 		},
+		{
+			input:            "AJOUTER LE CONTENU DU SACHET DANS 125 ML D'EAU FROIDE",
+			expectedDose:     "1",
+			expectedDoseUnit: "sachet",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -299,6 +304,10 @@ func TestMapFrequency(t *testing.T) {
 			input:    "COLLER UN TIMBRE, GARDER 24 HEURES, RETIRER ET CHANGER. POURSUIVRE PENDANT 6 SEMAINES ET PASSER A L'ETAPE 2",
 			expected: "1 fois par jour",
 		},
+		{
+			input:    "1 COMPRIME 1 FOIS PAR JOUR 30 MINUTES AVANT LE DEJEUNER (PP12)",
+			expected: "1 fois par jour",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -328,6 +337,40 @@ func TestMapRoute(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run("TestMapRoute", func(t *testing.T) {
 			actual := MapRoute(tc.input, Dosage{DoseUnit: tc.doseUnit})
+			if actual != tc.expected {
+				t.Errorf("I: %v\nE: %v\nA: %v", tc.input, tc.expected, actual)
+				return
+			}
+		})
+	}
+}
+
+func TestIsIpp(t *testing.T) {
+	testCases := []struct {
+		input    string
+		expected bool
+	}{
+		{
+			input:    "1 COMPRIME 1 FOIS PAR JOUR 30 MINUTES AVANT LE DEJEUNER (PP12)",
+			expected: true,
+		},
+		{
+			input:    "1 COMPRIME 1 FOIS PAR JOUR 30 MINUTES AVANT LE DEJEUNER (ULCERES-REFLUX)",
+			expected: true,
+		},
+		{
+			input:    "1 COMPRIME 1 FOIS PAR JOUR 30 MINUTES AVANT LE DEJEUNER (ULCERES-REFLUX)",
+			expected: true,
+		},
+		{
+			input:    "1 COMPRIME 1 FOIS PAR JOUR 30 MINUTES AVANT LE DEJEUNER (PP205)",
+			expected: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run("TestIsIpp", func(t *testing.T) {
+			actual := isIpp(tc.input)
 			if actual != tc.expected {
 				t.Errorf("I: %v\nE: %v\nA: %v", tc.input, tc.expected, actual)
 				return
